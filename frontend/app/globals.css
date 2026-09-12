@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #10221f;
+  --muted: #71807c;
+  --line: #e4ece8;
+  --paper: #f7faf8;
+  --green: #138a68;
+  --blue: #2878c8;
+  --amber: #e39a29;
+  --red: #d95b55;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+}

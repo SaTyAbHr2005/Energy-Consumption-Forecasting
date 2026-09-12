@@ -1,0 +1,104 @@
+# -----------------------------
+# General / OS
+# -----------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# -----------------------------
+# IDE
+# -----------------------------
+.vscode/
+.idea/
+
+# -----------------------------
+# Environment & Secrets
+# -----------------------------
+.env
+.env.*
+!.env.example
+
+.venv/
+env/
+venv/
+ENV/
+
+backend/bills.db
+
+# -----------------------------
+# Python / Backend
+# -----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+htmlcov/
+.coverage
+.tox/
+
+# -----------------------------
+# Node / Frontend (Next.js)
+# -----------------------------
+node_modules/
+frontend/node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Vercel
+.vercel/
+frontend/.vercel/
+
+# -----------------------------
+# Data & Uploads
+# -----------------------------
+data/*
+!data/.keep
+!data/raw/.keep
+!data/processed/.keep
+!data/external/.keep
+
+backend/data/uploads/*
+!backend/data/uploads/.keep
+
+# -----------------------------
+# Results
+# -----------------------------
+results/*
+!results/.keep
+!results/figures/.keep
+!results/predictions/.keep
+!results/metrics/.keep
+
+# -----------------------------
+# Models
+# -----------------------------
+models/*
+!models/.keep
+!models/final/
+!models/final/*
+
+# -----------------------------
+# AI Agent Files
+# -----------------------------
+.agents/
+
+# -----------------------------
+# Temporary / Logs
+# -----------------------------
+*.log
+*.tmp
+*.temp
