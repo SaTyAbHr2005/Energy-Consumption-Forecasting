@@ -118,3 +118,6 @@ GEMINI.md
 *.log
 *.tmp
 *.temp
+
+
+!results/metrics/final_selected_model.json
