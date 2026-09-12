@@ -97,7 +97,23 @@ models/*
 .agents/
 
 # -----------------------------
-# Temporary / Logs
+# Temporary / Scratch Files
+# -----------------------------
+.scratch/
+scratch/
+scratch.py
+scratch_append.py
+scratch_routes.py
+
+# Temporary test scripts
+test-login.js
+test_auth.js
+
+# AI-generated project instructions
+GEMINI.md
+
+# -----------------------------
+# Logs / Temporary Files
 # -----------------------------
 *.log
 *.tmp
