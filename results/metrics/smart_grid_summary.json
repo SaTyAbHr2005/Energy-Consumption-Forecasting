@@ -1,0 +1,30 @@
+{
+  "data_mode": "Historical forecast simulation",
+  "historical_average_consumption": 1.09116486239964,
+  "forecast_average_consumption": 0.972738918175662,
+  "peak_threshold": 2.34504,
+  "critical_threshold": 3.92648533333333,
+  "predicted_peak_count": 93,
+  "highest_predicted_demand": 3.85324716567993,
+  "highest_predicted_demand_timestamp": "2010-11-20 19:00:00",
+  "tou_baseline_cost": 31221.06175372,
+  "potential_optimized_cost": 31195.2789388804,
+  "potential_savings": 25.7828148396111,
+  "potential_savings_percentage": 0.0825814799092763,
+  "total_shiftable_energy": 4.41734752405167,
+  "shiftable_fraction_assumption": 0.2,
+  "recommendations": [
+    {
+      "recommendation": "Review appliance usage during high-consumption weekend periods.",
+      "reason": "Measured weekend consumption is materially higher than weekday consumption.",
+      "priority": "Medium",
+      "supporting_metric": "Weekend average = 1.23 vs weekday = 1.04 kWh/hour"
+    },
+    {
+      "recommendation": "Consider shifting flexible loads away from repeated high-demand periods.",
+      "reason": "Multiple predicted periods exceed the high-demand threshold.",
+      "priority": "Medium",
+      "supporting_metric": "Predicted peak periods = 93"
+    }
+  ]
+}

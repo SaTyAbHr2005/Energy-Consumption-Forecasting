@@ -1,0 +1,10 @@
+{
+  "input_records": 34589,
+  "output_records": 33119,
+  "features_created": 43,
+  "feature_names": ["avg_global_active_power", "avg_global_reactive_power", "avg_voltage", "avg_global_intensity", "total_sub_metering_1", "total_sub_metering_2", "total_sub_metering_3", "is_long_gap", "is_energy_outlier", "year", "month", "day", "day_of_month", "day_of_week", "hour", "week_of_year", "quarter", "is_weekend", "hour_sin", "hour_cos", "dow_sin", "dow_cos", "month_sin", "month_cos", "lag_1", "lag_3", "lag_6", "lag_12", "lag_24", "lag_48", "lag_72", "lag_168", "rolling_mean_3", "rolling_mean_6", "rolling_mean_12", "rolling_mean_24", "rolling_mean_168", "rolling_std_24", "rolling_min_24", "rolling_max_24", "trend_3h", "trend_24h", "is_high_demand_previous_hour"],
+  "rows_removed_for_history": 1470,
+  "missing_values_before": 10321,
+  "missing_values_after": 0,
+  "target_column": "energy_kwh"
+}

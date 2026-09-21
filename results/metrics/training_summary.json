@@ -1,0 +1,36 @@
+{
+  "models": [
+    "Naive",
+    "SARIMA",
+    "RandomForest",
+    "XGBoost"
+  ],
+  "training_records": 23183,
+  "validation_records": 4967,
+  "test_records": 4969,
+  "training_start": "2006-12-23 17:00:00",
+  "training_end": "2009-09-03 14:00:00",
+  "validation_start": "2009-09-03 15:00:00",
+  "validation_end": "2010-04-11 15:00:00",
+  "test_start": "2010-04-11 16:00:00",
+  "test_end": "2010-11-26 21:00:00",
+  "forecast_horizons": [
+    1,
+    24
+  ],
+  "training_status": "SUCCESS",
+  "sarima_config": {
+    "order": [
+      1,
+      0,
+      0
+    ],
+    "seasonal_order": [
+      1,
+      0,
+      0,
+      24
+    ]
+  },
+  "note": "LSTM/GRU were dropped in the R port: they received weight 0 in the final ensemble."
+}

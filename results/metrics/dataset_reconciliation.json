@@ -1,0 +1,18 @@
+{
+  "raw_records": 2075259,
+  "hourly_records": 34589,
+  "clean_records": 34589,
+  "feature_records": 33119,
+  "train_records": 23183,
+  "validation_records": 4967,
+  "test_records": 4969,
+  "raw_start": "2006-12-16 17:24:00",
+  "raw_end": "2010-11-26 21:02:00",
+  "hourly_start": "2006-12-16 17:00:00",
+  "hourly_end": "2010-11-26 21:00:00",
+  "feature_start": "2006-12-23 17:00:00",
+  "feature_end": "2010-11-26 21:00:00",
+  "raw_to_hourly_reduction_reason": "Legitimate time-series aggregation from 1-minute measurements to 1-hour observations. The complete historical period is preserved and energy is summed, not averaged.",
+  "feature_row_reduction_reason": "Dropped 1470 rows: the first 168 hours have no lag_168, and hours inside long measurement gaps carry no target or lag values (no silent null filling).",
+  "data_coverage_status": "Complete representation of the full timeline."
+}

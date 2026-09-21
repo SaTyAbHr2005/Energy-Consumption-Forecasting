@@ -38,14 +38,11 @@ An ensemble of decision trees used to map non-linear relationships.
 Gradient boosted decision trees optimized for speed and performance.
 - Capable of modeling complex interactions between context flags (like `is_high_demand_previous_hour`) and trailing lags.
 
-## 9. Model 5: LSTM (Long Short-Term Memory)
-A recurrent neural network designed for sequential data.
-- **Sequence Length:** 168 hours (1 full week of context).
-- **Architecture:** `LSTM(64) -> Dropout(0.2) -> Dense(1)`.
-- Models the raw sequential history to infer internal latent state representations.
+## 9. LSTM / GRU (not part of the R implementation)
+The original Python project also trained LSTM and GRU networks, but in the final ensemble they received weight 0: XGBoost alone won. The R implementation therefore compares Naive, SARIMA, Random Forest and XGBoost only.
 
 ## 10. Recursive Forecasting Strategy
-For models that primarily output 1-step predictions (Random Forest, XGBoost, LSTM), we implemented a true recursive 24-hour forecasting loop:
+For models that primarily output 1-step predictions (Random Forest, XGBoost), we implemented a true recursive 24-hour forecasting loop:
 1. Predict `t+1` using actual history.
 2. Append the predicted value to the local historical sequence.
 3. Re-calculate all engineered features (e.g., update `rolling_mean_24`, advance calendar cyclical variables).
@@ -53,30 +50,23 @@ For models that primarily output 1-step predictions (Random Forest, XGBoost, LST
 5. Repeat 24 times.
 This guarantees no future actual targets leak into the multi-step predictions.
 
-## 11. LSTM Scaling
-Neural networks are sensitive to input magnitude. 
-- A `MinMaxScaler` was fitted **exclusively on the training dataset**.
-- Validation and test sequences are transformed using this fitted scaler, completely isolating future magnitudes.
-- Outputs are inverse-transformed back to raw `kWh` before saving predictions.
-
-## 12. Leakage Prevention
+## 11. Leakage Prevention
 - **Target Separation:** `energy_kwh` is strictly partitioned as the `y` target and excluded from the `X` feature matrix during training.
 - **Covariate Exclusion:** Confounding environmental variables from the UCI dataset (`avg_voltage`, `global_intensity`) were stripped from the feature vectors, as their future states would be unknown during true forecasting.
-- **Window Safety:** The engineered rolling features exclusively use `rowsBetween(-w, -1)`, guaranteeing the current target hour is ignored in statistical aggregates.
+- **Window Safety:** The engineered rolling features exclusively use `ROWS BETWEEN w PRECEDING AND 1 PRECEDING`, guaranteeing the current target hour is ignored in statistical aggregates.
 
-## 13. Model Artifact Storage
+## 12. Model Artifact Storage
 Trained model states and prediction outputs are cleanly segregated:
-- **Models:** Saved to `models/` (Not strictly written as heavy artifacts to avoid bloat, but structure is enforced).
-- **Predictions:** Written in standardized Parquet format to `results/predictions/` (e.g., `results/predictions/xgboost_predictions.parquet`).
+- **Models:** the baseline models are not persisted; the tuned production XGBoost models are saved to `models/final/` by `backend/pipeline/08_optimize.R`.
+- **Predictions:** Written in Parquet format to `results/predictions/` (e.g., `xgboost_predictions.parquet`); the XGBoost predictions are also written as `xgboost_predictions.csv`, which the API serves.
 
-## 14. Model Comparison Rationale
+## 13. Model Comparison Rationale
 Why implement multiple models?
 - **Naive:** Sets the absolute minimum performance threshold.
 - **SARIMA:** Provides strong parametric baselines relying entirely on linear auto-correlation.
 - **Tree-based (RF/XGB):** Excellent at discovering complex non-linear feature interactions without deep network tuning.
-- **LSTM:** Excels at extracting long-range temporal dependencies directly from sequence structures.
 
-## 15. Module 8 Evaluation
+## 14. Module 8 Evaluation
 Module 7 **does not declare a winner.** 
 Its sole responsibility is generating strict, leakage-free predictions for all test horizons. 
 Module 8 will load these unified outputs, compute formal metrics (MAE, RMSE, MAPE), and objectively declare the best-performing model for the final Smart Grid integration.

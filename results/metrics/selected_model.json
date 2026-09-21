@@ -1,0 +1,8 @@
+{
+  "selected_model": "XGBoost",
+  "selection_basis": "Lowest RMSE on the 24-hour forecasting horizon.",
+  "primary_metric": "RMSE",
+  "best_horizon_1_model": "XGBoost",
+  "best_horizon_24_model": "XGBoost",
+  "beats_naive": true
+}

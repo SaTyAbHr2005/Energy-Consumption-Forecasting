@@ -33,7 +33,7 @@ This module explores the historical Smart Home Energy Consumption dataset to unc
 
 ## 4. Peak-Demand Methodology
 High-demand periods were determined strictly from the dataset distribution rather than arbitrary limits:
-- **90th Percentile Threshold**: 2.28 kWh (High Demand)
+- **90th Percentile Threshold**: 2.345 kWh (High Demand)
 - **95th Percentile Threshold**: 2.74 kWh (Critical Demand)
 - **High Demand Hours**: 1,660 hours
 - **Critical Demand Hours**: 2,042 hours

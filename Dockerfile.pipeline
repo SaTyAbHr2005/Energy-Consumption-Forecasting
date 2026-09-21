@@ -1,0 +1,25 @@
+# EnergySense data + ML pipeline (R, sparklyr, XGBoost). Build from the project root:
+#   docker build -f Dockerfile.pipeline -t energysense-pipeline .
+# Run (mounts the project so data/, results/ and models/ persist on your machine):
+#   docker run --rm -v "$PWD":/app energysense-pipeline Rscript backend/pipeline/run_all.R
+FROM rocker/r-ver:4.5.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openjdk-17-jre-headless curl ca-certificates \
+      libcurl4-openssl-dev libssl-dev libsodium-dev zlib1g-dev libxml2-dev \
+      libcairo2-dev libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
+      libpng-dev libtiff5-dev libjpeg-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Posit Package Manager serves prebuilt Linux binaries (fast install).
+RUN Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest")); \
+    install.packages(c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", \
+                       "data.table", "arrow", "sparklyr", "dplyr", "ggplot2", "ranger", "testthat"))'
+
+# Local Apache Spark for sparklyr (dlcdn keeps only current releases, archive is the slower fallback).
+ARG SPARK_VERSION=3.5.9
+RUN (curl -fsSL --retry 3 "https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz" -o /tmp/spark.tgz       || curl -fsSL --retry 5 "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz" -o /tmp/spark.tgz)     && tar -xzf /tmp/spark.tgz -C /opt && ln -s /opt/spark-${SPARK_VERSION}-bin-hadoop3 /opt/spark && rm /tmp/spark.tgz
+ENV SPARK_HOME=/opt/spark
+
+WORKDIR /app
+ENV TZ=UTC

@@ -1,0 +1,38 @@
+{
+  "preprocessing_status": "success",
+  "input_records": 34589,
+  "null_timestamps_removed": 0,
+  "start_timestamp": "2006-12-16 17:00:00",
+  "end_timestamp": "2010-11-26 21:00:00",
+  "records_before_dedup": 34589,
+  "duplicate_timestamps": 0,
+  "records_after_dedup": 34589,
+  "expected_hourly_records": 34589,
+  "actual_hourly_records": 34589,
+  "missing_hourly_records": 0,
+  "missing_values_before": {
+    "energy_kwh": 421,
+    "avg_global_active_power": 421,
+    "avg_global_reactive_power": 421,
+    "avg_voltage": 421,
+    "avg_global_intensity": 421,
+    "total_sub_metering_1": 421,
+    "total_sub_metering_2": 421,
+    "total_sub_metering_3": 421
+  },
+  "missing_values_after": {
+    "energy_kwh": 420,
+    "avg_global_active_power": 421,
+    "avg_global_reactive_power": 421,
+    "avg_voltage": 421,
+    "avg_global_intensity": 421,
+    "total_sub_metering_1": 421,
+    "total_sub_metering_2": 421,
+    "total_sub_metering_3": 421
+  },
+  "outlier_count": 733,
+  "outlier_lower_bound": -1.51355,
+  "outlier_upper_bound": 3.43405,
+  "negative_energy_values": 0,
+  "output_records": 34589
+}

@@ -1,58 +1,51 @@
 # Module 8: Model Evaluation & Selection
 
 ## 1. Purpose
-The purpose of this module is to objectively evaluate the performance of all forecasting models trained in Module 7 on a completely unseen test dataset. We aim to determine the best model for predicting household energy consumption for smart-grid decision support.
+Objectively evaluate every baseline forecasting model on a completely unseen test set and choose the best one for smart-grid decision support.
 
 ## 2. Evaluation Dataset
-The models were evaluated using the strict chronological test set holding exactly `4969` records. The test data was kept completely unseen during training, hyperparameter selection, and scaler fitting.
+Strict chronological test set; the 24-hour horizon is scored on its last 4969 hours. The test data was never used for training, tuning or scaling.
 
 ## 3. Models Evaluated
-- **Naive Baseline**: Direct shifted prediction.
-- **SARIMA**: Statistical auto-regressive model.
-- **Random Forest**: Tree ensemble using historical features.
-- **XGBoost**: Gradient boosted trees.
-- **LSTM**: Recurrent Neural Network using 168-hour lookback.
+- **Naive baseline**: previous hour (1h) / same hour previous day (24h).
+- **SARIMA(1,0,0)(1,0,0)[24]**: statistical seasonal model, fitted on the last two weeks of training data.
+- **Random Forest** (ranger, 50 trees) and **XGBoost**: tree models on the calendar/lag/rolling features.
+- LSTM/GRU were dropped in the R port: in the earlier Python project they received weight 0 in the final ensemble.
 
 ## 4. Metrics
-- **MAE** (Mean Absolute Error): Average absolute difference.
-- **RMSE** (Root Mean Squared Error): Penalizes larger errors heavily.
-- **MAPE** (Mean Absolute Percentage Error): Relative error.
-- **R²**: Coefficient of determination.
+MAE, RMSE, MAPE and R2.
 
-## 5. Horizon Evaluation
-We evaluated two horizons:
-- **Horizon 1**: 1-hour ahead (next hour).
-- **Horizon 24**: Recursive 24-hour ahead forecasting.
+## 5. Horizons
+- **Horizon 1**: next hour.
+- **Horizon 24**: recursive 24-hour forecast.
 
-## 6. Baseline Comparison
-Each model was compared against the Naive Baseline. A positive improvement % means the model outperformed the baseline.
+## 6. Baseline comparison
+A positive improvement % means the model beat the Naive baseline.
 
-## 7. Peak-Demand Evaluation
-A smart-grid application must accurately predict demand spikes. We evaluated each model's ability to predict hours where demand exceeded the 90th percentile threshold (`2.28 kWh`).
+## 7. Peak-demand evaluation
+Ability to flag hours above the 90th percentile threshold (2.35 kWh).
 
-## 8. Selected Production Model
-- **Best Overall Model:** `XGBoost`
+## 8. Selected model
+- **Best model:** `XGBoost`
 - **Rationale:** Lowest RMSE on the 24-hour forecasting horizon.
-- **Beats Naive Baseline:** YES
+- **Beats naive baseline:** YES
 
-## 9. Evaluation Results
+## 9. Results
 
-### Horizon 24 Performance
+### Horizon 24
 ```text
-       model      mae     rmse        r2  mae_improvement_vs_naive
-        LSTM 0.518844 0.652337  0.091752                 -1.609703
-       Naive 0.510624 0.759121 -0.143677                  0.000000
-RandomForest 0.373814 0.552091  0.349447                 26.792764
-      SARIMA 0.882537 1.073340 -1.458865                -72.834875
-     XGBoost 0.332361 0.492360  0.482601                 34.910821
+        model    mae   rmse      r2 mae_improvement_vs_naive
+        Naive 0.5106 0.7591 -0.1437                     0.00
+ RandomForest 0.3552 0.5215  0.4196                    30.45
+       SARIMA 0.8875 1.0779 -1.4799                   -73.81
+      XGBoost 0.3063 0.4912  0.4851                    40.02
 ```
 
-### Peak Demand Performance (Horizon 24)
+### Peak demand (Horizon 24)
 ```text
-       model  precision   recall  f1_score
-        LSTM   0.000000 0.000000  0.000000
-       Naive   0.232727 0.233577  0.233151
-RandomForest   0.500000 1.000000  0.666667
-      SARIMA   0.000000 0.000000  0.000000
-     XGBoost   1.000000 1.000000  1.000000
+        model precision recall f1_score
+        Naive    0.2241  0.225   0.2245
+ RandomForest    0.0000  0.000   0.0000
+       SARIMA    0.0000  0.000   0.0000
+      XGBoost    1.0000  1.000   1.0000
 ```

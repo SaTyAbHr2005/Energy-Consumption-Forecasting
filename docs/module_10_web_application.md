@@ -1,19 +1,29 @@
-# Module 10: FastAPI Backend and Next.js Frontend
+# Module 10: R (plumber) Backend and Next.js Frontend
 
 Module 10 exposes the completed forecasting and Module 9 decision-support
-artifacts through a FastAPI API and a responsive multi-page Next.js application.
+artifacts through an R (plumber) API and a responsive multi-page Next.js application.
 
 ## Run the backend
 
-From the project root:
+From the project root (needs R 4.1+ and the packages listed in the README):
 
 ```bash
-pip install -r requirements.txt
-uvicorn backend.main:app --reload
+Rscript backend/run.R
 ```
 
-The API is available at `http://localhost:8000`. Interactive API
-documentation is available at `/docs`.
+The API is available at `http://localhost:8000`. Backend layout:
+
+* `backend/run.R` - entry point (loads `.env`, starts plumber)
+* `backend/R/routes.R` - HTTP routes, CORS, auth, error handling
+* `backend/R/analysis.R` - data loading, feature engineering, XGBoost forecast, dashboard
+* `backend/R/smart_grid.R` - peak detection, time-of-use cost, load shifting, recommendations
+* `backend/R/validator.R` - CSV upload validation and storage
+* `backend/R/supabase.R` - Supabase Auth / PostgREST / Storage client
+* `backend/R/artifacts.R` - endpoints serving the pre-computed files in `results/`
+
+The XGBoost models in `models/final/` were trained offline with Python and are
+loaded unchanged by the R `xgboost` package. `backend/tests/run_checks.R`
+verifies that the R feature builder and prediction match the Python reference.
 
 ## Run the frontend
 

@@ -30,7 +30,7 @@ These features were not chosen arbitrarily; they directly map to findings derive
 
 2. **Consumption Distribution Evidence (Calendar & Peak)**
     * **`is_weekend`**: EDA verified weekend average consumption hits 1.23 kWh, compared to weekday average of 1.04 kWh.
-    * **Peak Context**: Peak-demand mapping correctly placed the dataset's 90th percentile at 2.28 kWh, prompting the inclusion of trailing peak flags.
+    * **Peak Context**: Peak-demand mapping correctly placed the dataset's 90th percentile at 2.345 kWh, prompting the inclusion of trailing peak flags.
 
 ## Safeguards & Leakage Prevention
 * **Chronological Integrity**: The dataset enforces ascending timestamps.

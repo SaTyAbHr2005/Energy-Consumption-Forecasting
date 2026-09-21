@@ -1,0 +1,11 @@
+{
+  "raw_record_count": 2075259,
+  "hourly_record_count": 34589,
+  "expected_hourly_count": 34589,
+  "hours_with_full_coverage": 34587,
+  "hours_with_partial_coverage": 2,
+  "hours_with_no_measurements": 0,
+  "minimum_minutes_per_hour": 3,
+  "maximum_minutes_per_hour": 60,
+  "average_minutes_per_hour": 59.9976582150395
+}

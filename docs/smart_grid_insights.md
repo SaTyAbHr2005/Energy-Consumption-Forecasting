@@ -12,7 +12,7 @@ The Big Data Analytics pipeline is:
 
 ```text
 2,075,259 raw minute-level records
-        -> PySpark
+        -> Spark (sparklyr)
 34,589 hourly observations
         -> preprocessing and feature engineering
         -> forecasting
@@ -26,7 +26,7 @@ The Big Data Analytics pipeline is:
 ## Peak Demand Detection
 
 The selected model metadata supplies the established 90th-percentile
-high-demand threshold (`p90_threshold`, currently 2.28 kWh). A forecast is a
+high-demand threshold (`p90_threshold`, currently 2.345 kWh). A forecast is a
 peak when `predicted_consumption >= threshold`, and the threshold is
 configurable.
 

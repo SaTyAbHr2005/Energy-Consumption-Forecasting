@@ -66,12 +66,12 @@ We intentionally omit transformations like `StandardScaler` or `MinMaxScaler`.
 Keeping the data in its original physical units (kWh, Volts, Amps) allows Module 5 (EDA) to produce human-readable and meaningful insights. Scaling is strictly a machine learning preparation step and will be deferred to Module 6 or inside model pipelines.
 
 ## Parquet Output
-The cleaned data is written in Parquet format. If run on a Windows machine without Hadoop native libraries (`winutils.exe`), the script safely catches the resulting `FileNotFoundException` and falls back to saving via Pandas, since the aggregated dataset easily fits in memory.
+The cleaned data (about 35k rows) is collected from Spark and written to `data/processed/uci_hourly_clean.parquet` with the R `arrow` package, so no Hadoop native libraries (`winutils.exe`) are needed on Windows.
 
 ## How to Run
 
 Execute the pipeline from the project root:
 
 ```bash
-python scripts/preprocess_data.py
+Rscript backend/pipeline/03_preprocess.R
 ```

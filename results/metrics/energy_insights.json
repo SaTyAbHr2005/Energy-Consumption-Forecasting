@@ -1,0 +1,56 @@
+{
+  "record_count": 34169,
+  "average_hourly_consumption": 1.09116486239964,
+  "maximum_hourly_consumption": 6.56053333333334,
+  "minimum_hourly_consumption": 0.0296,
+  "average_daily_consumption": 26.0181522563387,
+  "weekday_average": 1.035182003481,
+  "weekend_average": 1.23330508026929,
+  "highest_consumption_hour": 20,
+  "lowest_consumption_hour": 4,
+  "peak_demand_frequency": 0.100002926629401,
+  "top_5_highest_consumption_hours": [
+    {
+      "timestamp": "2008-11-23T18:00:00",
+      "energy_kwh": 6.56053333333334
+    },
+    {
+      "timestamp": "2009-01-16T20:00:00",
+      "energy_kwh": 6.51963333333333
+    },
+    {
+      "timestamp": "2008-02-02T19:00:00",
+      "energy_kwh": 6.49603333333333
+    },
+    {
+      "timestamp": "2007-12-23T19:00:00",
+      "energy_kwh": 6.488
+    },
+    {
+      "timestamp": "2007-02-22T21:00:00",
+      "energy_kwh": 6.36386666666667
+    }
+  ],
+  "top_5_lowest_consumption_hours": [
+    {
+      "timestamp": "2010-08-17T21:00:00",
+      "energy_kwh": 0.0296
+    },
+    {
+      "timestamp": "2010-11-26T21:00:00",
+      "energy_kwh": 0.0467333333333333
+    },
+    {
+      "timestamp": "2008-12-10T11:00:00",
+      "energy_kwh": 0.0693
+    },
+    {
+      "timestamp": "2008-08-23T21:00:00",
+      "energy_kwh": 0.124
+    },
+    {
+      "timestamp": "2007-07-15T18:00:00",
+      "energy_kwh": 0.1256
+    }
+  ]
+}

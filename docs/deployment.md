@@ -5,9 +5,9 @@ This document outlines the deployment strategy for the EnergySense project using
 ## 1. Architecture
 
 *   **Frontend**: Hosted on [Vercel](https://vercel.com) (Hobby Tier). Next.js provides static and SSR capabilities.
-*   **Backend**: Hosted on [Render](https://render.com) (Web Service Free Tier). FastAPI runs the API and XGBoost model inferences.
+*   **Backend**: Hosted on [Render](https://render.com) (Web Service Free Tier, Docker). An R (plumber) API runs the endpoints and XGBoost model inferences.
 *   **Database & Auth**: Hosted on [Supabase](https://supabase.com) (Free Tier). Provides PostgreSQL for data storage, Authentication, and Storage buckets for CSV files.
-*   *Note: PySpark is strictly for the research/data-processing pipeline and is not deployed to the production web server to comply with the free-tier memory limits.*
+*   *Note: Spark (sparklyr) and model training belong to the offline pipeline (`backend/pipeline/`) and are not deployed to the production web server, to stay within free-tier memory limits. The API only loads the trained models and pre-computed results.*
 
 ## 2. GitHub Setup
 
@@ -16,7 +16,9 @@ Ensure your local project has no sensitive secrets committed.
 # Verify working tree is clean and secrets are ignored
 git status
 ```
-The `.gitignore` has been thoroughly configured to exclude `.env`, virtual environments, local SQLite DBs, and raw datasets. Push this repository to your GitHub account.
+The `.gitignore` has been thoroughly configured to exclude `.env`, local SQLite DBs, and raw datasets. Push this repository to your GitHub account.
+
+**Trained models and results are committed on purpose.** The Render image copies `models/final/` and `results/` (metrics, analytics and `xgboost_predictions.csv`, about 3 MB) from the repository, because the API serves them. After re-running the pipeline (`backend/pipeline/run_all.R`), commit the changed files under `models/final/` and `results/` and redeploy.
 
 ## 3. Supabase Setup
 
@@ -32,9 +34,11 @@ You will need the following from your Supabase Dashboard (Project Settings -> AP
 *   `SUPABASE_URL` (For Backend)
 *   `SUPABASE_SERVICE_ROLE_KEY` (For Backend - **SECRET**)
 
-## 4. Render Setup (FastAPI Backend)
+## 4. Render Setup (R Backend)
 
-Render is used instead of Vercel for the backend because XGBoost and Pandas combined exceed Vercel's 250MB serverless function limit.
+The backend is written in R and runs in a Docker container, because Render has no native R runtime. The `Dockerfile` in the project root builds the image (R 4.5 + plumber + xgboost).
+
+> **Migrating an existing Python service:** a Render service's language cannot be changed after creation. Create a **new** Web Service (below), point the Vercel variable `NEXT_PUBLIC_API_URL` at its URL, redeploy the frontend, then delete the old Python service.
 
 1.  Log in to [Render](https://render.com).
 2.  Click **New +** and select **Web Service**.
@@ -42,9 +46,7 @@ Render is used instead of Vercel for the backend because XGBoost and Pandas comb
 4.  Configure the service:
     *   **Name**: `energysense-backend`
     *   **Root Directory**: `.` (leave blank or explicitly type `.`)
-    *   **Environment**: `Python 3`
-    *   **Build Command**: `pip install -r backend/requirements.txt`
-    *   **Start Command**: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+    *   **Language / Runtime**: `Docker` (uses `./Dockerfile`; no build or start command needed)
     *   **Instance Type**: `Free`
 5.  Add the following Environment Variables in Render:
     *   `SUPABASE_URL`: `<your-supabase-url>`
@@ -52,7 +54,7 @@ Render is used instead of Vercel for the backend because XGBoost and Pandas comb
     *   `FRONTEND_URL`: `https://<your-vercel-domain>` (You can add this after deploying Vercel).
 6.  Click **Create Web Service**.
 
-*Note: Render's Free tier will put the service to sleep after 15 minutes of inactivity. The first request after sleeping will take ~30-50 seconds (Cold Start). Subsequent requests are fast.*
+*Note: Render's Free tier will put the service to sleep after 15 minutes of inactivity. The first request after sleeping will take ~30-50 seconds (Cold Start). Subsequent requests are fast. The first Docker build takes several minutes while the R packages install.*
 
 ## 5. Vercel Setup (Next.js Frontend)
 
@@ -83,4 +85,4 @@ Once both are deployed, test the E2E flow:
 
 *   **CORS**: The backend is configured to only accept requests from `localhost` and your specified `FRONTEND_URL`.
 *   **Secrets**: The `SUPABASE_SERVICE_ROLE_KEY` bypasses all Row Level Security. It is strictly injected into the Render backend environment variables and NEVER exposed to the frontend or committed to Git.
-*   **File System**: The backend uses the ephemeral `/tmp` directory (`tempfile.gettempdir()`) for CSV processing, making it fully compatible with read-only serverless/container environments.
+*   **File System**: The backend caches uploaded CSVs in the ephemeral temporary directory (R's `tempdir()`), which makes it compatible with read-only / container file systems; the source of truth is Supabase Storage.

@@ -27,7 +27,7 @@ timestamp,energy_consumption
 ```
 
 ## Validation Rules
-When a user uploads a CSV, it goes through a validation layer (`scripts/validate_user_csv.py`) that checks:
+When a user uploads a CSV, it goes through a validation layer (`backend/R/validator.R`, shared by the API and the CLI below) that checks:
 1. **Schema Check:** Ensures required columns are present.
 2. **Timestamp Check:** Identifies unparseable values, missing values, duplicate timestamps, and gaps. Determines the likely sampling interval (e.g., 15 minutes, 1 hour).
 3. **Values Check:** Ensures all energy consumption values are numeric, non-null, and non-negative.
@@ -48,5 +48,5 @@ Based on the duration (history) of the data provided, the system assigns a forec
 ## CLI Usage Example
 To validate a CSV file from the command line, run:
 ```bash
-python scripts/validate_user_csv.py path/to/user_file.csv
+Rscript backend/pipeline/validate_user_csv.R path/to/user_file.csv
 ```

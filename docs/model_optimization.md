@@ -1,31 +1,11 @@
 # Pre-Module 9: Model Optimization
 
-## 1. Purpose
-Rigorous optimization of the forecasting pipeline before moving to the decision-support web application.
+The intermediate optimisation step of the original Python project (an early XGBoost tuning pass that
+also compared a recursive and a direct 24-hour model) was **folded into the final optimisation**:
+see [final_forecasting_optimization.md](./final_forecasting_optimization.md), produced by
+`backend/pipeline/08_optimize.R`. That stage keeps the same methodology:
 
-## 2. Methodology
-- Extensively expanded features (168-hour lags, EWMA, rolling stats, trend derivations).
-- Evaluated Direct Multi-Horizon forecasting for the 24-hour target (predicting t+24 directly).
-- Implemented XGBoost with 1000 estimators and early stopping on the validation set.
-- Did **NOT** touch the test set during tuning.
-
-## 3. Results (Optimized XGBoost)
-
-### 1-Hour Horizon
-- **MAE:** 0.3102
-- **RMSE:** 0.4597
-- **R²:** 0.5805
-- **Accuracy ±10%:** 21.53%
-- **Accuracy ±20%:** 40.57%
-
-### 24-Hour Horizon (Direct Forecast)
-- **MAE:** 0.4140
-- **RMSE:** 0.5768
-- **R²:** 0.3364
-- **Accuracy ±10%:** 11.61%
-- **Accuracy ±20%:** 24.22%
-
-### Peak Detection (24-Hour)
-- **Precision:** 0.2000
-- **Recall:** 0.0110
-- **F1:** 0.0209
+- Extended leakage-free features (lags up to 168 h, rolling statistics, EWMA, same-hour averages).
+- XGBoost with a log1p target and early stopping on the validation set only.
+- A direct 24-hour model in addition to the 1-hour model.
+- The test set is evaluated exactly once, after every choice is fixed.

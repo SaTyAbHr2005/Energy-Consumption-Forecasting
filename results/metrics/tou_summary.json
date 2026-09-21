@@ -1,0 +1,14 @@
+{
+  "tariff_label": "Illustrative TOU tariff used for simulation.",
+  "off_peak_rate": 3,
+  "normal_rate": 6,
+  "peak_rate": 10,
+  "off_peak_energy_kwh": 1052.27218589187,
+  "off_peak_cost_inr": 3156.8165576756,
+  "normal_energy_kwh": 2437.10744729638,
+  "normal_cost_inr": 14622.6446837783,
+  "peak_energy_kwh": 1344.16005122662,
+  "peak_cost_inr": 13441.6005122662,
+  "total_energy_kwh": 4833.53968441486,
+  "total_simulated_cost_inr": 31221.06175372
+}

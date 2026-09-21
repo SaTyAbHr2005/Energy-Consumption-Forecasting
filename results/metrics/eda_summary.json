@@ -1,0 +1,85 @@
+{
+  "dataset_overview": {
+    "num_records": 34589,
+    "num_variables": 11,
+    "start_date": "2006-12-16 17:00:00",
+    "end_date": "2010-11-26 21:00:00",
+    "total_duration_days": 1441.17
+  },
+  "consumption_statistics": {
+    "mean": 1.09116486239964,
+    "median": 0.802366666666667,
+    "min": 0.0296,
+    "max": 6.56053333333334,
+    "stddev": 0.897411774893777,
+    "variance": 0.805347893717999,
+    "percentile_25": 0.3418,
+    "percentile_50": 0.802366666666667,
+    "percentile_75": 1.5787,
+    "percentile_90": 2.34504,
+    "percentile_95": 2.86404666666667,
+    "percentile_99": 3.92648533333333
+  },
+  "hourly_analysis": {
+    "highest_average_consumption_hour": 20,
+    "lowest_average_consumption_hour": 4,
+    "max_hourly_average": 1.89895323522541,
+    "min_hourly_average": 0.443831645569621
+  },
+  "weekday_weekend_analysis": {
+    "highest_consumption_weekday": "Saturday",
+    "lowest_consumption_weekday": "Thursday",
+    "weekday_average_kwh": 1.035182003481,
+    "weekend_average_kwh": 1.23330508026929
+  },
+  "monthly_analysis": {
+    "highest_consumption_month": 1,
+    "lowest_consumption_month": 8
+  },
+  "peak_demand_analysis": {
+    "percentile_90_threshold": 2.34504,
+    "percentile_95_threshold": 2.86404666666667,
+    "maximum_observed_demand": 6.56053333333334,
+    "high_demand_hours_count": 1708,
+    "critical_demand_hours_count": 1709
+  },
+  "submetering_analysis": {
+    "sub_metering_1": {
+      "total": 2299135,
+      "relative_contribution": 0.126358500830955
+    },
+    "sub_metering_2": {
+      "total": 2661031,
+      "relative_contribution": 0.146247996670355
+    },
+    "sub_metering_3": {
+      "total": 13235167,
+      "relative_contribution": 0.72739350249869
+    }
+  },
+  "variability_analysis": {
+    "overall_cv": 0.822434634597956,
+    "overall_stddev": 0.897411774893777
+  },
+  "correlation_analysis": {
+    "avg_global_active_power": 0.999691266383377,
+    "avg_global_reactive_power": 0.311929076693955,
+    "avg_voltage": -0.379176790807745,
+    "avg_global_intensity": 0.999109110531568,
+    "total_sub_metering_1": 0.496487255349891,
+    "total_sub_metering_2": 0.440284989511988,
+    "total_sub_metering_3": 0.695551253091507,
+    "is_long_gap": null,
+    "is_energy_outlier": 0.487365383658892,
+    "hour": 0.331447580793986,
+    "month": -0.0385653200490137,
+    "dayofweek_num": 0.00654380994668945,
+    "is_weekend": 0.099403257467377
+  },
+  "autocorrelation_analysis": {
+    "lag_1": 0.713013596511121,
+    "lag_24": 0.435772335357965,
+    "lag_48": 0.401236525761562,
+    "lag_168": 0.46079697411521
+  }
+}

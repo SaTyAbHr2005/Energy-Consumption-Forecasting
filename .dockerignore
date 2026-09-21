@@ -1,0 +1,14 @@
+frontend
+.git
+.env
+**/.env
+**/node_modules
+backend/data
+backend/bills.db
+backend/tests
+backend/pipeline
+data
+docs
+results/figures
+results/predictions/*.parquet
+Dockerfile*

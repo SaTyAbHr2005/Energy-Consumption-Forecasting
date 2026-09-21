@@ -1,0 +1,14 @@
+{
+  "sub_metering_1": {
+    "total": 2299135,
+    "relative_contribution": 0.126358500830955
+  },
+  "sub_metering_2": {
+    "total": 2661031,
+    "relative_contribution": 0.146247996670355
+  },
+  "sub_metering_3": {
+    "total": 13235167,
+    "relative_contribution": 0.72739350249869
+  }
+}

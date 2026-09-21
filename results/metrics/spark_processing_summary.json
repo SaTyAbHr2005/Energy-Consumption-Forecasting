@@ -1,0 +1,19 @@
+{
+  "dataset": "UCI Individual Household Electric Power Consumption",
+  "records": 2075259,
+  "columns": 9,
+  "missing_values": {
+    "missing_Global_active_power": 25979,
+    "missing_Global_reactive_power": 25979,
+    "missing_Voltage": 25979,
+    "missing_Global_intensity": 25979,
+    "missing_Sub_metering_1": 25979,
+    "missing_Sub_metering_2": 25979,
+    "missing_Sub_metering_3": 25979
+  },
+  "start_timestamp": "2006-12-16 17:24:00",
+  "end_timestamp": "2010-11-26 21:02:00",
+  "partitions": 16,
+  "hourly_records": 34589,
+  "processing_status": "success"
+}
