@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest")); \
     install.packages(c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", "data.table", "tesseract", "magick"))'
 
+# Tesseract's OpenMP threads thrash on Render's fractional free-tier CPU (~3x slower); one thread is fastest there.
+ENV OMP_THREAD_LIMIT=1
+
 WORKDIR /app
 COPY backend/ backend/
 COPY models/final/ models/final/
