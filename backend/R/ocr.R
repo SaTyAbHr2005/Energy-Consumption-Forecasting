@@ -66,7 +66,43 @@ parse_bill_units <- function(text, bill) {
   NA_real_
 }
 
+# Adani Electricity (Mumbai) layout: a summary row "Bill Month | Units Consumed | Current Month Bill | ..."
+# ("AUG-26  145  1283.54 ...") and the payable amount as a round sum ("₹1270.00") just after it.
+ADANI_MONTHS <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+
+parse_adani_text <- function(text) {
+  pos <- regexpr("Bill\\s*Month", text, ignore.case = TRUE, perl = TRUE)
+  tail_txt <- substr(text, max(pos[1], 1), max(pos[1], 1) + 700)
+  re <- paste0("\\b(", paste(ADANI_MONTHS, collapse = "|"), ")[A-Z]*\\s*[-–]?\\s*([0-9]{2})(?![0-9])")
+  m <- regexec(re, tail_txt, ignore.case = TRUE, perl = TRUE)
+  hit <- regmatches(tail_txt, m)[[1]]
+  if (length(hit) != 3) return(NULL)
+  month <- match(toupper(hit[2]), ADANI_MONTHS)
+  year <- 2000L + as.integer(hit[3])
+  after <- substring(tail_txt, regexpr(hit[1], tail_txt, fixed = TRUE)[1] + nchar(hit[1]))
+  units <- regmatches(after, regexec("^\\s*([0-9]{1,5})(?![0-9.])", after, perl = TRUE))[[1]]
+  # payable amount: first round-sum "NNNN.00" after the row (the leading rupee sign is often OCR'd as a 7)
+  amt <- regmatches(after, regexec("([0-9]{3,6})\\.00(?![0-9])", after, perl = TRUE))[[1]]
+  cost <- NA_real_
+  if (length(amt) == 2) {
+    cost <- as.numeric(amt[2])
+    if (cost >= 10000 && startsWith(amt[2], "7")) cost <- as.numeric(substring(amt[2], 2))
+  }
+  if (is.na(cost)) {
+    tot <- regmatches(text, regexec("Total\\s+current\\s+month\\s+charges[^0-9]*([0-9]{3,6}\\.[0-9]{2})", text, ignore.case = TRUE, perl = TRUE))[[1]]
+    if (length(tot) == 2) cost <- as.numeric(tot[2])
+  }
+  list(month = month, year = year, cost = cost, consumption = if (length(units) == 2) as.numeric(units[2]) else NA_real_)
+}
+
 parse_bill_text <- function(text) {
+  if (grepl("Units\\s*Consumed", text, ignore.case = TRUE, perl = TRUE)) {
+    a <- parse_adani_text(text)
+    if (!is.null(a)) {
+      return(list(month = a$month, year = a$year, bill_date = sprintf("%s %d", BILL_MONTH_NAMES[a$month], a$year),
+                  cost = a$cost, consumption = a$consumption))
+    }
+  }
   bill <- parse_bill_month(text)
   list(
     month = bill$month, year = bill$year,
@@ -92,7 +128,7 @@ bill_ocr_text <- function(image_path, psm = 11) {
 extract_bill_fields <- function(image_path) {
   text <- bill_ocr_text(image_path, 11)
   out <- parse_bill_text(text)
-  if (is.na(out$consumption) && !is.null(parse_bill_month(text))) {
+  if (is.na(out$consumption) && !is.na(out$bill_date)) {
     out2 <- parse_bill_text(paste(text, bill_ocr_text(image_path, 6), sep = "\n"))
     if (!is.na(out2$consumption)) out <- out2
   }
