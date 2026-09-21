@@ -1,7 +1,7 @@
 # R package list for the backend (the R equivalent of requirements.txt).
 #   Rscript backend/install_packages.R           # API only (what Render installs)
 #   Rscript backend/install_packages.R pipeline  # API + Spark/ML pipeline + tests
-api      <- c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", "data.table")
+api      <- c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", "data.table", "tesseract", "magick")
 pipeline <- c("sparklyr", "dplyr", "arrow", "ranger", "ggplot2", "testthat")
 
 pkgs <- if ("pipeline" %in% commandArgs(TRUE)) c(api, pipeline) else api

@@ -127,7 +127,7 @@ export default function UploadPage() {
             <input 
               type="file" 
               className="hidden" 
-              accept={uploadType === "meter" ? ".csv" : "image/*,.pdf"} 
+              accept={uploadType === "meter" ? ".csv" : "image/jpeg,image/png,.jpg,.jpeg,.png"} 
               onChange={handleUpload} 
               disabled={loading} 
             />
@@ -159,7 +159,7 @@ export default function UploadPage() {
             <div className="bg-white p-6 rounded-3xl border border-line">
               <h4 className="font-bold text-sm mb-4">Supported Formats</h4>
               <p className="text-sm text-muted">
-                You can upload JPG, PNG, or PDF copies of your electricity bill. The system will extract your cost and consumption data automatically.
+                Upload a clear JPG or PNG photo of the whole electricity bill (MSEDCL format). The system reads the bill month, amount and units with OCR.
               </p>
             </div>
           )}

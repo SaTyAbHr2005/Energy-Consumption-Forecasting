@@ -32,3 +32,7 @@ The EnergySense architecture uses Supabase to provide secure user authentication
 ## Future Proofing
 
 This architecture separates the core analytics engine from the data persistence layer. Because metadata is tracked in `uploaded_datasets`, future features such as **Electricity Bill OCR** can easily be integrated by introducing new tables (e.g., `utility_bills`) that link via foreign keys back to the `profiles` table. The forecasting engine remains untouched.
+
+## Electricity bill OCR
+
+`POST /api/upload/bill` runs real OCR (`backend/R/ocr.R`: the `tesseract` and `magick` R packages with English + Marathi language data) on the uploaded image and reads the **bill month**, the **amount payable** and the **units consumed** from an MSEDCL (Mahavitaran) bill. The image is converted to grayscale, upscaled and OCR'd in sparse-text mode; the parser has fallbacks for garbled labels. If any field cannot be read, the API answers `422` and stores nothing, so no made-up numbers are ever saved. One bill per month per user (`409` for a duplicate). PDFs are not supported; upload a JPG or PNG. The Docker image installs the OCR libraries (see `Dockerfile`).

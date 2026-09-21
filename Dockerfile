@@ -4,11 +4,12 @@ FROM rocker/r-ver:4.5.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       libcurl4-openssl-dev libssl-dev libsodium-dev zlib1g-dev \
+      libtesseract-dev libleptonica-dev tesseract-ocr-eng tesseract-ocr-mar libmagick++-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Posit Package Manager serves prebuilt Linux binaries (fast install).
 RUN Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest")); \
-    install.packages(c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", "data.table"))'
+    install.packages(c("plumber", "httr2", "jsonlite", "xgboost", "lubridate", "uuid", "data.table", "tesseract", "magick"))'
 
 WORKDIR /app
 COPY backend/ backend/

@@ -91,4 +91,15 @@ check("spike is classified Critical", table$demand_level[19] == "Critical" && su
 shifts <- recommend_load_shifts(day, threshold = 2)
 check("load shift moves energy to a cheaper hour and saves money", nrow(shifts) == 1 && shifts$estimated_savings > 0)
 
+# --- bill OCR parsing (text captured from two real MSEDCL bills; no OCR engine needed) ----------
+read_ocr <- function(f) paste(readLines(file.path(fx, f), encoding = "UTF-8"), collapse = "\n")
+ocr_a <- parse_bill_text(read_ocr("bill_sep2026_a.ocr.txt"))
+check("bill A: September 2026, amount 1190, units 129",
+      identical(ocr_a$bill_date, "September 2026") && near(ocr_a$cost, 1190) && near(ocr_a$consumption, 129))
+ocr_b <- parse_bill_text(read_ocr("bill_sep2026_b.ocr.txt"))
+check("bill B: September 2026, amount 640, units 76",
+      identical(ocr_b$bill_date, "September 2026") && near(ocr_b$cost, 640) && near(ocr_b$consumption, 76))
+check("meter-row fallback reads the units", near(parse_bill_units("x 1221 1.00 129 0 129 y", list(month = 9L, year = 2026L)), 129))
+check("unreadable text yields NA, never invented numbers", is.na(parse_bill_text("hello world")$cost))
+
 cat("\nAll checks passed.\n")

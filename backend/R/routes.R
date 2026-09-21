@@ -54,6 +54,25 @@ uploaded_file <- function(req) {
   list(bytes = bytes, filename = part$filename %||% "upload", content_type = part$content_type %||% "application/octet-stream")
 }
 
+# OCR an uploaded bill image; 422 (never made-up numbers) when a field cannot be read.
+read_bill <- function(bytes, ext) {
+  tmp <- tempfile(fileext = paste0(".", ext))
+  on.exit(unlink(tmp))
+  writeBin(bytes, tmp)
+  fields <- tryCatch(extract_bill_fields(tmp), error = function(e) {
+    message("OCR ERROR: ", conditionMessage(e))
+    NULL
+  })
+  missing <- c(if (is.null(fields) || is.na(fields$bill_date)) "bill month",
+               if (is.null(fields) || is.na(fields$cost)) "amount",
+               if (is.null(fields) || is.na(fields$consumption)) "units consumed")
+  if (length(missing)) {
+    http_error(422, sprintf("Could not read the %s from this image. Upload a sharp, well-lit photo of the whole bill.",
+                            paste(missing, collapse = ", ")))
+  }
+  fields
+}
+
 param_or_null <- function(x) if (is.null(x) || !nzchar(x)) NULL else x
 
 build_api <- function() {
@@ -73,18 +92,19 @@ build_api <- function() {
       uid <- current_user(req)
       file <- uploaded_file(req)
       bill_id <- uuid::UUIDgenerate()
-      ext <- if (grepl(".", file$filename, fixed = TRUE)) tail(strsplit(file$filename, ".", fixed = TRUE)[[1]], 1) else "jpg"
-      storage_path <- sprintf("%s/bills/%s.%s", uid, bill_id, ext)
-      try(sb_upload(storage_path, file$bytes, file$content_type), silent = TRUE)
-
-      # Demo OCR: fixed values from a sample MSEDCL bill. A real system would call an
-      # OCR service (Google Cloud Vision / AWS Textract) on the uploaded image.
-      cost <- 1330.00
-      consumption <- 138.0
-      bill_date <- "August 2026"
+      ext <- if (grepl(".", file$filename, fixed = TRUE)) tolower(tail(strsplit(file$filename, ".", fixed = TRUE)[[1]], 1)) else "jpg"
+      if (!ext %in% c("jpg", "jpeg", "png", "webp", "tif", "tiff")) {
+        http_error(422, "Please upload the bill as a JPG or PNG image (PDF is not supported).")
+      }
+      fields <- read_bill(file$bytes, ext)
+      cost <- fields$cost
+      consumption <- fields$consumption
+      bill_date <- fields$bill_date
       if (length(sb_select("user_bills", list(user_id = paste0("eq.", uid), bill_date = paste0("eq.", bill_date)), select = "id")) > 0) {
         http_error(409, sprintf("A bill for %s has already been uploaded.", bill_date))
       }
+      storage_path <- sprintf("%s/bills/%s.%s", uid, bill_id, ext)
+      try(sb_upload(storage_path, file$bytes, file$content_type), silent = TRUE)
       sb_insert("user_bills", list(user_id = uid, bill_date = bill_date, cost = cost, consumption = consumption,
                                    storage_path = storage_path, created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S", tz = "UTC")))
       list(bill_id = bill_id, storage_path = storage_path, extracted_cost = cost,
