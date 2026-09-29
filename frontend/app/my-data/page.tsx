@@ -17,7 +17,7 @@ export default function MyDataPage() {
     if (!bills || bills.length === 0) return { chartData: [], comparison: null };
     
     const chartData = [...bills].reverse().map(b => ({
-      name: b.bill_date.replace(" 2026", ""), // shorten for chart
+      name: b.bill_date,
       cost: b.cost,
       consumption: b.consumption
     }));

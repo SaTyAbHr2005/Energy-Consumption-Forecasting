@@ -52,8 +52,14 @@ them.
   the existing Module 2 validator and returns a temporary `upload_id`.
 * `POST /api/forecast/user?upload_id=...&horizon=1|24` converts interval kWh
   to hourly sums, builds the exact final-model feature schema, loads the
-  existing XGBoost artifact, and returns user-specific forecast and
-  smart-grid analysis. It never retrains or writes model artifacts.
+  existing XGBoost artifact (`xgboost_1h.json` for the next hour,
+  `xgboost_24h_direct.json` for the next 24 hours), and returns user-specific
+  forecast and smart-grid analysis. It never retrains or writes model artifacts.
+  The 24-hour model was trained as "features of hour t -> kWh of hour t + 23",
+  so hour k of the forecast uses the feature row of hour last + k - 23 (the last
+  23 history rows plus the next hour): one call, no recursive error build-up.
+* `GET /api/bills` returns the user's bills ordered by bill month, newest first
+  (not by upload time), which the month-over-month comparison relies on.
 * `GET /api/forecast?horizon=1|24` serves the stored XGBoost forecast output.
 * `GET /api/analytics/summary`, `/hourly`, `/daily`, and `/weekday`
 * `GET /api/smart-grid/summary`, `/peaks`, `/tou`, `/load-shifting`, and
@@ -68,7 +74,9 @@ User CSV -> validation -> hourly preparation -> feature engineering
 ```
 
 The final feature builder requires at least 169 hourly observations (the
-168-hour lag plus the prediction row). Insufficient uploads return a structured
+168-hour lag plus the prediction row) for the 1-hour forecast and 192 for the
+24-hour forecast (23 more, because its earliest feature row is 23 hours back).
+Insufficient uploads return a structured
 `insufficient_history` response and never fall back to UCI results. Uploaded
 energy values are interval kWh and are summed when resampling; they are not
 divided by 60. User thresholds are calculated from the uploaded hourly history

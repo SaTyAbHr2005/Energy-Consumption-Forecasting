@@ -122,6 +122,21 @@ predict_next_hour <- function(history, next_ts, p90, features, model_file = "xgb
   max(0, expm1(as.numeric(predict(load_model(model_file), x))))
 }
 
+# Direct 24-hour model (08_optimize.R): trained on the feature row of hour t -> kWh of hour t + 23.
+# So the kWh of last_ts + k (k = 1..24) comes from the feature row of hour last_ts + k - 23: the
+# last 23 history rows plus the next hour. Every row only uses readings before its own hour.
+predict_next_day <- function(history, p90, features, model_file = "xgboost_24h_direct.json") {
+  last_ts <- history$timestamp[nrow(history)]
+  frame <- rbind(history[c("timestamp", "energy_kwh")], data.frame(timestamp = last_ts + 3600, energy_kwh = NA_real_))
+  built <- build_features(frame, p90)
+  unknown <- setdiff(features, names(built))
+  if (length(unknown) > 0) value_error(paste("Unsupported model features:", paste(unknown, collapse = ", ")))
+  x <- as.matrix(built[(nrow(built) - 23):nrow(built), features])
+  if (anyNA(x)) value_error("Feature generation produced incomplete history")
+  data.frame(timestamp = last_ts + 3600 * (1:24),
+             predicted_consumption = pmax(0, expm1(as.numeric(predict(load_model(model_file), x)))))
+}
+
 # --- forecast ---------------------------------------------------------------
 generate_forecast <- function(upload_id, horizon, user_id) {
   if (!(horizon %in% c(1L, 24L))) value_error("horizon must be 1 or 24")
@@ -136,27 +151,25 @@ generate_forecast <- function(upload_id, horizon, user_id) {
 
   history <- load_hourly(upload_id)
   available <- nrow(history)
-  if (available < MIN_HOURLY_HISTORY) {
+  # The 24-hour model reads features 23 hours further back (see below), so it needs 23 more hours.
+  required <- if (horizon == 1L) MIN_HOURLY_HISTORY else MIN_HOURLY_HISTORY + 23L
+  if (available < required) {
     return(list(status = "insufficient_history",
                 message = "More historical consumption data is required to generate a forecast.",
-                required_hours = MIN_HOURLY_HISTORY, available_hours = available, source = "user_upload"))
+                required_hours = required, available_hours = available, source = "user_upload"))
   }
   y <- history$energy_kwh
   last_ts <- history$timestamp[available]
   threshold <- quantile(y, 0.90, names = FALSE)
+  features <- unlist(jsonlite::fromJSON(file.path(METRICS, "final_selected_model.json"), simplifyVector = FALSE)$features)
 
   if (horizon == 1L) {
-    features <- unlist(jsonlite::fromJSON(file.path(METRICS, "final_selected_model.json"), simplifyVector = FALSE)$features)
     next_ts <- last_ts + 3600
     forecast <- data.frame(timestamp = next_ts,
                            predicted_consumption = predict_next_hour(history, next_ts, threshold, features))
   } else {
-    # Seasonal naive: repeat the last 24 observed hours with +/-5% noise. It gives a
-    # stable day-ahead curve, unlike recursive ML forecasts that drift over 24 steps.
-    base <- tail(y, 24)
-    predicted <- round(base * runif(24, 0.95, 1.05), 3)
-    forecast <- data.frame(timestamp = last_ts + 3600 * (1:24), predicted_consumption = predicted,
-                           estimated_cost = predicted * RATE_INR_PER_KWH)
+    forecast <- predict_next_day(history, threshold, features)
+    forecast$estimated_cost <- forecast$predicted_consumption * RATE_INR_PER_KWH
   }
   list(status = "complete", source = "user_upload", model = "XGBoost", horizon = horizon,
        threshold_type = "User Dataset Threshold", peak_threshold = threshold,

@@ -94,11 +94,11 @@ export default function SmartGridPage() {
                           </div>
                           <div>
                             <p className="font-bold text-ink text-sm">{p.timestamp}</p>
-                            <p className="text-xs text-muted">Exceeds threshold by {(p.predicted - smartGrid.peak_threshold).toFixed(2)} kWh</p>
+                            <p className="text-xs text-muted">Exceeds threshold by {(p.predicted_consumption - smartGrid.peak_threshold).toFixed(2)} kWh</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-red text-lg">{p.predicted?.toFixed(2)} <span className="text-sm font-normal">kWh</span></p>
+                          <p className="font-bold text-red text-lg">{p.predicted_consumption?.toFixed(2)} <span className="text-sm font-normal">kWh</span></p>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-red bg-red/10 px-2 py-0.5 rounded-full">{p.demand_level}</span>
                         </div>
                       </div>

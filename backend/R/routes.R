@@ -73,6 +73,14 @@ read_bill <- function(bytes, ext) {
   fields
 }
 
+# Bills ordered by bill month, newest first (not by upload time): "August 2026" -> 2026 * 12 + 8.
+# Unparseable months go last.
+bills_newest_first <- function(bills) {
+  parts <- strsplit(vapply(bills, function(b) b$bill_date %||% "", ""), " ", fixed = TRUE)
+  key <- vapply(parts, function(p) suppressWarnings(as.numeric(p[2])) * 12 + match(p[1], BILL_MONTH_NAMES), 0)
+  bills[order(-key)]
+}
+
 param_or_null <- function(x) if (is.null(x) || !nzchar(x)) NULL else x
 
 build_api <- function() {
@@ -112,8 +120,8 @@ build_api <- function() {
            message = "Bill uploaded and processed successfully.")
     }) |>
     plumber::pr_get("/api/bills", function(req) {
-      sb_select("user_bills", list(user_id = paste0("eq.", current_user(req))),
-                select = "id,bill_date,cost,consumption,storage_path,created_at", order = "created_at.desc")
+      bills_newest_first(sb_select("user_bills", list(user_id = paste0("eq.", current_user(req))),
+                                   select = "id,bill_date,cost,consumption,storage_path,created_at", order = "created_at.desc"))
     }) |>
     plumber::pr_delete("/api/bills/<bill_id:int>", function(req, bill_id) {
       deleted <- sb_delete("user_bills", list(id = paste0("eq.", bill_id), user_id = paste0("eq.", current_user(req))))
