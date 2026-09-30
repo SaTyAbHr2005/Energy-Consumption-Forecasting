@@ -130,4 +130,4 @@ npm run dev
 Please refer to [docs/deployment.md](./docs/deployment.md) for a comprehensive step-by-step guide on how to deploy this application to Vercel and Render for free.
 
 ## 📝 License
-This project was created for academic purposes.
+This project was created for academic purposes and is released under the [MIT License](./LICENSE).
