@@ -46,6 +46,7 @@ yarn-error.log*
 frontend/.next/
 frontend/out/
 frontend/build/
+*.tsbuildinfo
 
 # Vercel
 .vercel/

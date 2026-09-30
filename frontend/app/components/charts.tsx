@@ -1,8 +1,9 @@
 "use client";
 
-import { 
+import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine,
+  ComposedChart, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from "recharts";
 
 const COLORS = {
@@ -159,6 +160,113 @@ export function SimpleBarChart({ data, xKey, yKey, color = COLORS.green, onClick
         />
         <Bar dataKey={yKey} fill={color} radius={[4, 4, 0, 0]} onClick={onClick} />
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+const tooltipStyle = { borderRadius: '8px', border: '1px solid #e4ece8', fontSize: '13px' };
+const empty = (h: string) => <div className={`${h} flex items-center justify-center text-muted`}>No data available</div>;
+
+// Hour-of-day x day-of-week grid; cell colour scales with average kWh.
+export function ConsumptionHeatmap({ grid, rows }: { grid: number[][], rows: string[] }) {
+  const values = grid.flat().filter(v => v > 0);
+  if (!values.length) return empty("h-48");
+  const min = Math.min(...values), max = Math.max(...values);
+  const shade = (v: number) => {
+    const t = max > min ? (v - min) / (max - min) : 0;
+    return `hsl(${Math.round(150 - 150 * t)}, 70%, ${Math.round(88 - 40 * t)}%)`;
+  };
+  return (
+    <div className="overflow-x-auto">
+      <div className="grid gap-[3px] min-w-[640px]" style={{ gridTemplateColumns: "44px repeat(24, 1fr)" }}>
+        <div />
+        {Array.from({ length: 24 }, (_, h) => <div key={h} className="text-[10px] text-muted text-center">{h}</div>)}
+        {grid.map((row, d) => [
+          <div key={`l${d}`} className="text-xs text-muted self-center">{rows[d]}</div>,
+          ...row.map((v, h) => (
+            <div key={`${d}-${h}`} title={`${rows[d]} ${h}:00 — ${v.toFixed(3)} kWh`}
+              className="h-7 rounded-[3px]" style={{ background: v > 0 ? shade(v) : COLORS.line }} />
+          )),
+        ])}
+      </div>
+      <div className="flex items-center justify-end gap-2 mt-3 text-xs text-muted">
+        <span>{min.toFixed(2)} kWh</span>
+        <div className="w-32 h-2 rounded" style={{ background: `linear-gradient(to right, ${shade(min)}, ${shade((min + max) / 2)}, ${shade(max)})` }} />
+        <span>{max.toFixed(2)} kWh</span>
+      </div>
+    </div>
+  );
+}
+
+// 24-spoke clock comparing the weekday and weekend hourly profiles.
+export function ProfileRadarChart({ data }: { data: { hour: string, weekday: number, weekend: number }[] }) {
+  if (!data.length) return empty("h-64");
+  const max = Math.max(...data.flatMap(d => [d.weekday, d.weekend])) * 1.05;
+  return (
+    <ResponsiveContainer width="100%" height={320}>
+      <RadarChart data={data} outerRadius="75%">
+        <PolarGrid stroke={COLORS.line} />
+        <PolarAngleAxis dataKey="hour" fontSize={10} stroke={COLORS.muted} />
+        <PolarRadiusAxis domain={[0, max]} allowDataOverflow tick={false} axisLine={false} />
+        <Radar name="Weekend" dataKey="weekend" stroke={COLORS.amber} strokeWidth={2} fill={COLORS.amber} fillOpacity={0.2} />
+        <Radar name="Weekday" dataKey="weekday" stroke={COLORS.blue} strokeWidth={2} fill={COLORS.blue} fillOpacity={0.2} />
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `${v.toFixed(3)} kWh`} />
+        <Legend wrapperStyle={{ fontSize: '12px' }} />
+      </RadarChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Share of total energy per time-of-day band.
+export function ShareDonutChart({ data }: { data: { name: string, value: number }[] }) {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) return empty("h-48");
+  const palette = [COLORS.blue, COLORS.green, COLORS.amber, COLORS.red];
+  const labelled = data.map(d => ({ ...d, name: `${d.name} · ${Math.round(d.value / total * 100)}%` }));
+  return (
+    <ResponsiveContainer width="100%" height={280}>
+      <PieChart>
+        <Pie data={labelled} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3}>
+          {data.map((_, i) => <Cell key={i} fill={palette[i % palette.length]} />)}
+        </Pie>
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `${v.toFixed(1)} kWh`} />
+        <Legend verticalAlign="bottom" iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Frequency of hourly readings per kWh bin.
+export function HistogramChart({ data }: { data: { bin: string, count: number }[] }) {
+  if (!data.length) return empty("h-48");
+  return (
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} barCategoryGap={1} margin={{ top: 10, right: 10, left: -10, bottom: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.line} />
+        <XAxis dataKey="bin" stroke={COLORS.muted} fontSize={11} tickLine={false} axisLine={false}
+          label={{ value: "kWh per hour", position: "insideBottom", offset: -5, fontSize: 11, fill: COLORS.muted }} />
+        <YAxis stroke={COLORS.muted} fontSize={12} tickLine={false} axisLine={false} />
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v, 'Hours']} />
+        <Bar dataKey="count" fill={COLORS.blue} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Daily totals as bars with a 7-day moving average line.
+export function DailyTrendChart({ data }: { data: { date: string, total_kwh: number, avg7: number }[] }) {
+  if (!data.length) return empty("h-48");
+  return (
+    <ResponsiveContainer width="100%" height={280}>
+      <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORS.line} />
+        <XAxis dataKey="date" stroke={COLORS.muted} fontSize={11} tickLine={false} axisLine={false} minTickGap={20} />
+        <YAxis stroke={COLORS.muted} fontSize={12} tickLine={false} axisLine={false} />
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => `${v.toFixed(2)} kWh`} />
+        <Legend wrapperStyle={{ fontSize: '12px' }} />
+        <Bar dataKey="total_kwh" name="Daily total" fill={COLORS.green} fillOpacity={0.6} radius={[3, 3, 0, 0]} />
+        <Line dataKey="avg7" name="7-day average" stroke={COLORS.red} strokeWidth={2} dot={false} />
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }

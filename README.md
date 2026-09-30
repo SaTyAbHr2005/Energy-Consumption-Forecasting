@@ -12,6 +12,7 @@ EnergySense is a full-stack web application designed to help households analyze 
 
 *   **Data Ingestion**: Upload smart meter CSV data or digitize electricity bills.
 *   **Interactive Dashboard**: Visualize daily averages, peak consumption hours, and estimated billing costs.
+*   **Visual Analytics**: Weekday bar chart, 24-hour area profile, hour × day heatmap, weekday-vs-weekend radar, time-of-day donut, consumption histogram and daily trend with a 7-day moving average.
 *   **ML Forecasting**: Predict future household energy demand (1h to 24h horizons) using a pre-trained XGBoost model.
 *   **Smart Grid Simulation**: Identify Peak Periods and calculate potential savings by shifting flexible appliances (e.g., EV chargers, HVAC) to off-peak hours.
 *   **Actionable Recommendations**: Get personalized, data-driven recommendations to reduce energy waste.

@@ -1,7 +1,7 @@
 "use client";
 import { Header, Shell, State, useActiveUpload, useUserAnalysis, useUserCostAnalytics, CostBadge } from "../components";
-import { ConsumptionAreaChart, SimpleBarChart } from "../components/charts";
-import { BarChart2, Calendar, Clock, Activity } from "lucide-react";
+import { ConsumptionAreaChart, SimpleBarChart, ConsumptionHeatmap, ProfileRadarChart, ShareDonutChart, HistogramChart, DailyTrendChart } from "../components/charts";
+import { BarChart2, Calendar, Clock, Activity, Grid3x3, Radar, PieChart, BarChartHorizontal } from "lucide-react";
 import { useMemo } from "react";
 
 export default function AnalyticsPage() {
@@ -75,6 +75,56 @@ export default function AnalyticsPage() {
     });
     return Array.from(dailyMap.entries()).map(([date, total_kwh]) => ({ date, total_kwh }));
   }, [hourlyData]);
+
+  // Readings with parsed day-of-week (0 = Sunday) and hour, shared by the pattern charts below.
+  const readings = useMemo(() => hourlyData.flatMap((row: any) => {
+    if (!row.timestamp || row.energy_kwh == null) return [];
+    const [date, time] = row.timestamp.split(" ");
+    const [y, m, d] = date.split("-").map(Number);
+    const hour = parseInt((time ?? "0").split(":")[0]);
+    const day = new Date(y, m - 1, d).getDay();
+    return isNaN(day) || isNaN(hour) ? [] : [{ day, hour, kwh: Number(row.energy_kwh) }];
+  }), [hourlyData]);
+
+  const heatmap = useMemo(() => {
+    const sums = Array.from({ length: 7 }, () => new Array(24).fill(0));
+    const counts = Array.from({ length: 7 }, () => new Array(24).fill(0));
+    readings.forEach(r => { sums[r.day][r.hour] += r.kwh; counts[r.day][r.hour] += 1; });
+    // Rows Monday..Sunday
+    return [1, 2, 3, 4, 5, 6, 0].map(d => sums[d].map((s, h) => counts[d][h] ? s / counts[d][h] : 0));
+  }, [readings]);
+
+  const radarData = useMemo(() => {
+    const acc = Array.from({ length: 24 }, () => ({ wd: 0, wdn: 0, we: 0, wen: 0 }));
+    readings.forEach(r => {
+      const a = acc[r.hour];
+      if (r.day === 0 || r.day === 6) { a.we += r.kwh; a.wen++; } else { a.wd += r.kwh; a.wdn++; }
+    });
+    return acc.map((a, h) => ({ hour: `${h}h`, weekday: a.wdn ? a.wd / a.wdn : 0, weekend: a.wen ? a.we / a.wen : 0 }));
+  }, [readings]);
+
+  const shareData = useMemo(() => {
+    const bands = [
+      { name: "Night (00-06)", value: 0 }, { name: "Morning (06-12)", value: 0 },
+      { name: "Afternoon (12-18)", value: 0 }, { name: "Evening (18-24)", value: 0 },
+    ];
+    readings.forEach(r => { bands[Math.floor(r.hour / 6)].value += r.kwh; });
+    return bands;
+  }, [readings]);
+
+  const histogram = useMemo(() => {
+    if (!readings.length) return [];
+    const max = Math.max(...readings.map(r => r.kwh));
+    const bins = 12, width = max / bins || 1;
+    const counts = new Array(bins).fill(0);
+    readings.forEach(r => { counts[Math.min(bins - 1, Math.floor(r.kwh / width))]++; });
+    return counts.map((count, i) => ({ bin: (i * width).toFixed(2), count }));
+  }, [readings]);
+
+  const dailyTrend = useMemo(() => dailyData.map((d, i) => {
+    const win = dailyData.slice(Math.max(0, i - 6), i + 1);
+    return { ...d, avg7: win.reduce((s, w) => s + w.total_kwh, 0) / win.length };
+  }), [dailyData]);
 
   // Extract simple insights
   const insights = useMemo(() => {
@@ -227,10 +277,32 @@ export default function AnalyticsPage() {
               <p className="text-sm text-center text-muted mt-4">Aggregated baseline profile across all uploaded days.</p>
             </div>
 
-            {/* Bottom row: Daily timeline */}
+            {/* Heatmap: when during the week energy is used */}
             <div className="bg-white border border-line rounded-3xl p-6 shadow-sm">
-              <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><BarChart2 size={18} className="text-green"/> Daily energy consumption</h3>
-              <SimpleBarChart data={dailyData} xKey="date" yKey="total_kwh" color="#138a68" />
+              <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><Grid3x3 size={18} className="text-red-500"/> Weekly usage heatmap (hour × day)</h3>
+              <ConsumptionHeatmap grid={heatmap} rows={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]} />
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="bg-white border border-line rounded-3xl p-6 shadow-sm">
+                <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><Radar size={18} className="text-blue"/> Weekday vs weekend 24-hour profile</h3>
+                <ProfileRadarChart data={radarData} />
+              </div>
+              <div className="bg-white border border-line rounded-3xl p-6 shadow-sm">
+                <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><PieChart size={18} className="text-amber"/> Energy share by time of day</h3>
+                <ShareDonutChart data={shareData} />
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="bg-white border border-line rounded-3xl p-6 shadow-sm">
+                <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><BarChartHorizontal size={18} className="text-blue"/> Distribution of hourly consumption</h3>
+                <HistogramChart data={histogram} />
+              </div>
+              <div className="bg-white border border-line rounded-3xl p-6 shadow-sm">
+                <h3 className="font-bold text-ink mb-6 flex items-center gap-2"><BarChart2 size={18} className="text-green"/> Daily energy consumption and 7-day trend</h3>
+                <DailyTrendChart data={dailyTrend} />
+              </div>
             </div>
 
           </div>

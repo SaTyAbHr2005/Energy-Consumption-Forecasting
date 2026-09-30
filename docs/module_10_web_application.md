@@ -21,9 +21,10 @@ The API is available at `http://localhost:8000`. Backend layout:
 * `backend/R/supabase.R` - Supabase Auth / PostgREST / Storage client
 * `backend/R/artifacts.R` - endpoints serving the pre-computed files in `results/`
 
-The XGBoost models in `models/final/` were trained offline with Python and are
-loaded unchanged by the R `xgboost` package. `backend/tests/run_checks.R`
-verifies that the R feature builder and prediction match the Python reference.
+The XGBoost models in `models/final/` are produced offline by the R pipeline in
+`backend/pipeline/` and loaded unchanged by the R `xgboost` package.
+`backend/tests/run_checks.R` (kept locally, not committed) verifies the feature
+builder, forecast alignment and smart-grid calculations.
 
 ## Run the frontend
 
@@ -44,6 +45,23 @@ continue using the same household analysis; CSV contents are not stored in the
 browser. Without an active upload, the dashboard shows an empty state while
 the stored UCI/demo artifacts remain explicitly labelled on pages that expose
 them.
+
+## Analytics page visualisations
+
+`/analytics` computes every chart in the browser from the `historical_series`
+returned by `POST /api/forecast/user`, so it needs no extra API route. Chart
+components live in `frontend/app/components/charts.tsx` (Recharts, except the
+heatmap, which is a CSS grid).
+
+| Chart | Type | Shows |
+|---|---|---|
+| Average consumption by day | Bar | Mean hourly kWh per weekday |
+| 24-hour average profile | Area | Mean kWh for each hour of the day |
+| Weekly usage heatmap | Heatmap (7 × 24 grid) | Mean kWh for every weekday/hour pair |
+| Weekday vs weekend profile | Radar | Weekday and weekend 24-hour profiles overlaid |
+| Energy share by time of day | Donut | Share of total kWh in night/morning/afternoon/evening bands |
+| Distribution of hourly consumption | Histogram (12 bins) | How often each kWh level occurs |
+| Daily consumption and 7-day trend | Bar + line | Daily totals with a trailing 7-day moving average |
 
 ## API surfaces
 
